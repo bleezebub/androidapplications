@@ -17,6 +17,7 @@ class LanderCanvas(context:Context, attrs:AttributeSet):GCanvas(context, attrs){
     private lateinit var rocket:GSprite
     private lateinit var moonSurface:GSprite
     private var cnt:Int = 0
+    private var score:Int = 0
     private var asteroids:ArrayList<GSprite> = ArrayList<GSprite>()
     override fun init() {
         backgroundColor = GColor.BLACK
@@ -34,7 +35,8 @@ class LanderCanvas(context:Context, attrs:AttributeSet):GCanvas(context, attrs){
          rocket = GSprite(rocketImage)
         rocket.accelerationX = 0f
         rocket.accelerationY = 1f
-        rocket.setCollisionMargin(10f)
+        rocket.setCollisionMarginBottom(10f)
+        rocket.setCollisionMarginRight(45f)
         add(rocket)
 
 
@@ -58,6 +60,7 @@ class LanderCanvas(context:Context, attrs:AttributeSet):GCanvas(context, attrs){
         rocket.update()
         if(!rocket.isMoving)
                 return
+        score++
         for(asteroid in asteroids){
             asteroid.update()
         }
@@ -80,11 +83,9 @@ class LanderCanvas(context:Context, attrs:AttributeSet):GCanvas(context, attrs){
     }
     private fun stopthegame(){
         rocket.stop()
-        Toast.makeText(context, "Game Over Thanks for playing", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Game Over, Score: $score", Toast.LENGTH_SHORT).show()
     }
     private fun randomAsteroid(){
-
-        Log.d("rishabh", "here")
         val randomY = RandomGenerator.getInstance().nextInt(0, this.height)
         val x = this.width
         var asteroidImage = BitmapFactory.decodeResource(resources, R.drawable.asteroid)
@@ -94,6 +95,7 @@ class LanderCanvas(context:Context, attrs:AttributeSet):GCanvas(context, attrs){
         asteroid.y = randomY.toFloat()
         asteroid.accelerationY = 0f
         asteroid.accelerationX = -0.3f
+        asteroid.setCollisionMargin( asteroid.width/2f)
         asteroids.add(asteroid)
         add(asteroid)
     }
