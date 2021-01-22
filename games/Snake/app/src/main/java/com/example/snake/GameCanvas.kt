@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
+import androidx.core.view.MotionEventCompat
 import stanford.androidlib.graphics.GCanvas
 import stanford.androidlib.graphics.GColor
 import stanford.androidlib.graphics.GRect
@@ -21,6 +23,9 @@ import kotlin.collections.ArrayList
 *  Move the snake if its length is one (Done)
 *  Move the head if the length is more than one
 *  check if the head eats the apple and than increase its length
+*  increment score
+*  introduce the red-bigger apple which dissappears after a few seconds
+*  add swipe listners
 *   */
 
 
@@ -51,6 +56,7 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         animate(120){
             tick()
         }
+
     }
 
     private fun tick(){
@@ -99,7 +105,6 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
 
             apple.x = (Random().nextInt(maxX - minX + 1) + minX).toFloat()
             apple.y = (Random().nextInt(maxY - minY + 1) + minY).toFloat()
-            Log.d("rishabh", "here")
             apples.add((apple))
             add(apple)
         }
@@ -139,6 +144,5 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         walls.add(topWall)
         add(topWall)
     }
-
 
 }
