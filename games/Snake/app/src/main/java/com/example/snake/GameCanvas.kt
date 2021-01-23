@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.view.MotionEventCompat
 import stanford.androidlib.graphics.GCanvas
@@ -14,6 +15,7 @@ import stanford.androidlib.graphics.GSprite
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
+
 
 /*
 * TODO List:
@@ -26,10 +28,12 @@ import kotlin.collections.ArrayList
 *  increment score
 *  introduce the red-bigger apple which dissappears after a few seconds
 *  add swipe listners
+*  https://www.tutorialspoint.com/how-to-handle-right-to-left-and-left-to-right-swipe-gestures-on-android-using-kotlin
+* use this link for gesture listening
 *   */
 
 
-class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attrs) {
+class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attrs), GestureDetector.OnGestureListener {
 
     private var walls = ArrayList<GSprite>();
     private lateinit var head:GSprite
@@ -37,6 +41,9 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
     private var direction:Int = 0;
     private var apples = ArrayList<GSprite>()
     private var score = 0
+    lateinit var gestureDetector: GestureDetector
+    private val swipeThreshold = 100
+    private val swipeVelocityThreshold = 100
 
     //constants
     companion object{
@@ -49,14 +56,24 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         private const val APPLETHICKNESS = 30f
     }
     override fun init() {
-        this.backgroundColor = GColor.BLACK;
+        gestureDetector = GestureDetector(this)
+        this.backgroundColor = GColor.BLACK
         addWalls()
         addSnake()
+
 
         animate(120){
             tick()
         }
+    }
 
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return if (gestureDetector.onTouchEvent(event)) {
+            true
+        }
+        else {
+            super.onTouchEvent(event)
+        }
     }
 
     private fun tick(){
