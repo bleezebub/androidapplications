@@ -1,5 +1,6 @@
 package com.example.snake
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -7,11 +8,13 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.core.view.MotionEventCompat
 import stanford.androidlib.graphics.GCanvas
 import stanford.androidlib.graphics.GColor
 import stanford.androidlib.graphics.GRect
 import stanford.androidlib.graphics.GSprite
+import java.lang.Math.abs
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
@@ -27,13 +30,12 @@ import kotlin.collections.ArrayList
 *  check if the head eats the apple and than increase its length
 *  increment score
 *  introduce the red-bigger apple which dissappears after a few seconds
-*  add swipe listners
-*  https://www.tutorialspoint.com/how-to-handle-right-to-left-and-left-to-right-swipe-gestures-on-android-using-kotlin
+*  add swipe listners(Done)
 * use this link for gesture listening
 *   */
 
 
-class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attrs), GestureDetector.OnGestureListener {
+class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attrs) {
 
     private var walls = ArrayList<GSprite>();
     private lateinit var head:GSprite
@@ -41,10 +43,6 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
     private var direction:Int = 0;
     private var apples = ArrayList<GSprite>()
     private var score = 0
-    lateinit var gestureDetector: GestureDetector
-    private val swipeThreshold = 100
-    private val swipeVelocityThreshold = 100
-
     //constants
     companion object{
         private const val WALLTHICKNESS = 80f
@@ -54,28 +52,47 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         private const val SOUTH = 2
         private const val EAST = 3
         private const val APPLETHICKNESS = 30f
+        private const val XSWIPE = 200f
+        private const val YSWIPE = 200f
     }
+    @SuppressLint("ClickableViewAccessibility")
     override fun init() {
-        gestureDetector = GestureDetector(this)
         this.backgroundColor = GColor.BLACK
         addWalls()
         addSnake()
 
-
         animate(120){
             tick()
         }
-    }
+        var x1:Float = 0f
+        var x2:Float = 0f
+        var y1:Float = 0f
+        var y2:Float = 0f
+        setOnTouchListener{ _,event ->
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        return if (gestureDetector.onTouchEvent(event)) {
+            if(event.action == MotionEvent.ACTION_DOWN){
+                x1 = event.x
+                y1 = event.y
+            }
+            if(event.action == MotionEvent.ACTION_UP){
+                x2 = event.x
+                y2 = event.y
+                if(x1>x2 && abs(x1-x2)> XSWIPE){
+                    Toast.makeText(context, "leftswipe", Toast.LENGTH_SHORT).show()
+                }else if(x1<x2 && abs(x1-x2)> XSWIPE) {
+                    Toast.makeText(context, "rightswipe", Toast.LENGTH_SHORT).show()
+                }else if(y1>y2 && abs(y1-y2)> YSWIPE){
+                    Toast.makeText(context, "upswipe", Toast.LENGTH_SHORT).show()
+                }else if(y2>y1 && abs(y1-y2)> YSWIPE){
+                    Toast.makeText(context, "downswipe", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+
             true
-        }
-        else {
-            super.onTouchEvent(event)
+
         }
     }
-
     private fun tick(){
         addApples()
         //checking if the head has collided with the wall
