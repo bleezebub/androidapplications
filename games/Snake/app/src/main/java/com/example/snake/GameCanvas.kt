@@ -18,6 +18,7 @@ import java.lang.Math.abs
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 /*
@@ -39,9 +40,9 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
     private var walls = ArrayList<GSprite>();
     private lateinit var head:GSprite
     private var snake = ArrayDeque<GSprite>()
-    private var direction:Int = 0;
     private var apples = ArrayList<GSprite>()
     private var score = 0
+    private var directionMap = HashMap<GSprite, Int>()
     //constants
     companion object{
         private const val WALLTHICKNESS = 80f
@@ -81,13 +82,14 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
                 x2 = event.x
                 y2 = event.y
                 if(x1>x2 && abs(x1-x2)> XSWIPE){
-                    direction = LEFT
+
+                    directionMap[snake[0]] = LEFT
                 }else if(x1<x2 && abs(x1-x2)> XSWIPE) {
-                    direction = RIGHT
+                    directionMap[snake[0]] = RIGHT
                 }else if(y1>y2 && abs(y1-y2)> YSWIPE){
-                    direction = UP
+                    directionMap[snake[0]] = UP
                 }else if(y2>y1 && abs(y1-y2)> YSWIPE){
-                    direction = DOWN
+                    directionMap[snake[0]] = DOWN
                 }
             }
 
@@ -101,13 +103,13 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         checkwallcollision()
 
         if(snake.size == 1){
-            if(direction == UP){
+            if(directionMap[snake[0]] == UP){
                 snake[0].y-=Cord
-            }else if(direction == LEFT){
+            }else if(directionMap[snake[0]] == LEFT){
                 snake[0].x-=Cord
-            }else if(direction == DOWN){
+            }else if(directionMap[snake[0]] == DOWN){
                 snake[0].y+=Cord
-            }else if(direction == RIGHT){
+            }else if(directionMap[snake[0]] == RIGHT){
                 snake[0].x+=Cord
             }
         }else{
@@ -122,10 +124,14 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
                 remove(apples[i])
                 apples.removeAt(i)
                 score+=SCOREINCREMENT
-                 // TODO - > INCREMENT THE LENGTH Of THE SNAKE
+                addMoreBlock()
                 break
             }
         }
+    }
+
+    private fun addMoreBlock(){
+        //TODO: Bhai complicated hota jaara h
     }
     private fun checkwallcollision() {
         for(wall in walls){
