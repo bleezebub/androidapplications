@@ -22,7 +22,6 @@ import kotlin.collections.ArrayList
 
 /*
 * TODO List:
-*  Take user input for directions
 *  check if the head collided with its own body
 *  check if the head collides with the wall and than end (Done)
 *  Move the snake if its length is one (Done)
@@ -30,8 +29,8 @@ import kotlin.collections.ArrayList
 *  check if the head eats the apple and than increase its length
 *  increment score
 *  introduce the red-bigger apple which dissappears after a few seconds
-*  add swipe listners(Done)
-* use this link for gesture listening
+*  change the direction of snake after listening to the swipe and scroll listening when it is a complete body
+*
 *   */
 
 
@@ -46,22 +45,26 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
     //constants
     companion object{
         private const val WALLTHICKNESS = 80f
-        private const val NORTH = 0
-        private const val WEST = 1
+        private const val UP = 0
+        private const val LEFT = 1
         private const val BODYTHICKNESS = 50f
-        private const val SOUTH = 2
-        private const val EAST = 3
+        private const val DOWN = 2
+        private const val RIGHT = 3
         private const val APPLETHICKNESS = 30f
         private const val XSWIPE = 200f
         private const val YSWIPE = 200f
+        private const val Cord = 1
+        private const val FPS = 80
+        private const val SCOREINCREMENT = 5
     }
     @SuppressLint("ClickableViewAccessibility")
     override fun init() {
+        GSprite.setDebug(true)
         this.backgroundColor = GColor.BLACK
         addWalls()
         addSnake()
 
-        animate(120){
+        animate(FPS){
             tick()
         }
         var x1:Float = 0f
@@ -78,15 +81,14 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
                 x2 = event.x
                 y2 = event.y
                 if(x1>x2 && abs(x1-x2)> XSWIPE){
-                    Toast.makeText(context, "leftswipe", Toast.LENGTH_SHORT).show()
+                    direction = LEFT
                 }else if(x1<x2 && abs(x1-x2)> XSWIPE) {
-                    Toast.makeText(context, "rightswipe", Toast.LENGTH_SHORT).show()
+                    direction = RIGHT
                 }else if(y1>y2 && abs(y1-y2)> YSWIPE){
-                    Toast.makeText(context, "upswipe", Toast.LENGTH_SHORT).show()
+                    direction = UP
                 }else if(y2>y1 && abs(y1-y2)> YSWIPE){
-                    Toast.makeText(context, "downswipe", Toast.LENGTH_SHORT).show()
+                    direction = DOWN
                 }
-
             }
 
             true
@@ -94,8 +96,38 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         }
     }
     private fun tick(){
+        checkapplecollision()
         addApples()
-        //checking if the head has collided with the wall
+        checkwallcollision()
+
+        if(snake.size == 1){
+            if(direction == UP){
+                snake[0].y-=Cord
+            }else if(direction == LEFT){
+                snake[0].x-=Cord
+            }else if(direction == DOWN){
+                snake[0].y+=Cord
+            }else if(direction == RIGHT){
+                snake[0].x+=Cord
+            }
+        }else{
+
+        }
+        updateAll()
+    }
+    private fun checkapplecollision(){
+        for(i in 0..(apples.size -1)){
+            val apple = apples[i]
+            if(snake[0].collidesWith(apple)){
+                remove(apples[i])
+                apples.removeAt(i)
+                score+=SCOREINCREMENT
+                 // TODO - > INCREMENT THE LENGTH Of THE SNAKE
+                break
+            }
+        }
+    }
+    private fun checkwallcollision() {
         for(wall in walls){
             if(wall.collidesWith(snake[0])){
                 animationStop()
@@ -103,35 +135,18 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
                 bob.setTitle("Game Over")
                 bob.setMessage("Your Score: $score")
                 bob.setPositiveButton("ok"){ _, _ ->
+                    (context as Activity).finish()
                 }
                 bob.create().show()
-                (context as Activity).finish()
             }
         }
+    } // checks the collision of head with a wall
 
-
-
-
-        if(snake.size == 1){
-            if(direction == NORTH){
-                snake[0].y--
-            }else if(direction == WEST){
-                snake[0].x--
-            }else if(direction == SOUTH){
-                snake[0].y++
-            }else if(direction == EAST){
-                snake[0].x++
-            }
-        }else{
-
-        }
-        updateAll()
-    }
     private fun addApples(){
         if(apples.size == 3)
                 return
-        while(apples.size <= 3){
-            val apple = GSprite(GRect(APPLETHICKNESS, APPLETHICKNESS).setFillColor(GColor.WHITE))
+        while(apples.size < 3){
+            val apple = GSprite(GRect(APPLETHICKNESS, APPLETHICKNESS).setFillColor(GColor.RED))
             val maxX = (this.width - WALLTHICKNESS).toInt()
             val minX = (WALLTHICKNESS).toInt()
             val maxY = (this.height - WALLTHICKNESS).toInt()
@@ -142,7 +157,8 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
             apples.add((apple))
             add(apple)
         }
-    }
+    } // checks if there are less than 3 apples at any time and if not adds one
+
     private fun addSnake() {
         head = GSprite(GRect(BODYTHICKNESS, BODYTHICKNESS).setFillColor(GColor.WHITE))
         head.x = this.width.toFloat()/2
@@ -177,6 +193,6 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         topWall.y = 0f
         walls.add(topWall)
         add(topWall)
-    }
+    } // adds the four walls
 
 }
