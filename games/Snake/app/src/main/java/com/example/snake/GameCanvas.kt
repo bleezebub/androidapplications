@@ -6,10 +6,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.Toast
-import androidx.core.view.MotionEventCompat
 import stanford.androidlib.graphics.GCanvas
 import stanford.androidlib.graphics.GColor
 import stanford.androidlib.graphics.GRect
@@ -24,21 +22,17 @@ import kotlin.collections.HashMap
 /*
 * TODO List:
 *  check if the head collided with its own body
-*  check if the head collides with the wall and than end (Done)
-*  Move the snake if its length is one (Done)
 *  Move the head if the length is more than one
-*  check if the head eats the apple and than increase its length
 *  increment score
 *  introduce the red-bigger apple which dissappears after a few seconds
 *  change the direction of snake after listening to the swipe and scroll listening when it is a complete body
-*
+*   remove debugging settings
 *   */
 
 
 class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attrs) {
 
     private var walls = ArrayList<GSprite>();
-    private lateinit var head:GSprite
     private var snake = ArrayDeque<GSprite>()
     private var apples = ArrayList<GSprite>()
     private var score = 0
@@ -51,11 +45,11 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         private const val BODYTHICKNESS = 50f
         private const val DOWN = 2
         private const val RIGHT = 3
-        private const val APPLETHICKNESS = 30f
+        private const val APPLETHICKNESS = BODYTHICKNESS
         private const val XSWIPE = 200f
         private const val YSWIPE = 200f
         private const val Cord = 1
-        private const val FPS = 80
+        private const val FPS = 90
         private const val SCOREINCREMENT = 5
     }
     @SuppressLint("ClickableViewAccessibility")
@@ -98,10 +92,9 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         }
     }
     private fun tick(){
-        checkapplecollision()
         addApples()
         checkwallcollision()
-
+        checkapplecollision()
         if(snake.size == 1){
             if(directionMap[snake[0]] == UP){
                 snake[0].y-=Cord
@@ -113,7 +106,7 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
                 snake[0].x+=Cord
             }
         }else{
-
+            //now moving the whole snake is the next goal
         }
         updateAll()
     }
@@ -130,8 +123,40 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
         }
     }
 
-    private fun addMoreBlock(){
-        //TODO: Bhai complicated hota jaara h
+
+    private fun addMoreBlock() {
+        val dir = directionMap[snake[0]]
+        val head = snake[0]
+        var x = 0f
+        var y = 0f;
+       if(dir == DOWN){
+            x = head.x
+            y = head.y + BODYTHICKNESS
+       }else if(dir == UP){
+            x = head.x
+            y = head.y- BODYTHICKNESS
+       }else if(dir == RIGHT){
+            x = head.x + BODYTHICKNESS
+            y = head.y
+       }else if(dir == LEFT){
+            x = head.x - BODYTHICKNESS
+            y = head.y
+       }
+
+        val block = GSprite(GRect(BODYTHICKNESS, BODYTHICKNESS).setFillColor(GColor.WHITE))
+        block.x = x
+        block.y = y
+        snake.addLast(block)
+        if(dir == UP){
+            directionMap[snake[0]] = UP
+        }else if(dir == DOWN){
+            directionMap[snake[0]] = DOWN
+        }else if(dir == LEFT){
+            directionMap[snake[0]] = LEFT
+        }else{
+            directionMap[snake[0]] = RIGHT
+        }
+        add(block)
     }
     private fun checkwallcollision() {
         for(wall in walls){
@@ -151,6 +176,8 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
     private fun addApples(){
         if(apples.size == 3)
                 return
+        if(apples.size > 3)
+            Toast.makeText(context, "something wrong", Toast.LENGTH_SHORT).show()
         while(apples.size < 3){
             val apple = GSprite(GRect(APPLETHICKNESS, APPLETHICKNESS).setFillColor(GColor.RED))
             val maxX = (this.width - WALLTHICKNESS).toInt()
@@ -166,10 +193,11 @@ class GameCanvas(context: Context?, attrs: AttributeSet) : GCanvas(context, attr
     } // checks if there are less than 3 apples at any time and if not adds one
 
     private fun addSnake() {
-        head = GSprite(GRect(BODYTHICKNESS, BODYTHICKNESS).setFillColor(GColor.WHITE))
+        val head = GSprite(GRect(BODYTHICKNESS, BODYTHICKNESS).setFillColor(GColor.WHITE))
         head.x = this.width.toFloat()/2
         head.y = this.height.toFloat()/2
         snake.addLast(head)
+        directionMap[snake[0]] = UP
         add(head)
     }
 
